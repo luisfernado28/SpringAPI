@@ -8,9 +8,10 @@ Links to key sources
 - [`com.luisapi.userApi.Services.UserService`](src/main/java/com/luisapi/userApi/Services/UserService.java) — business logic.
 - [`com.luisapi.userApi.Repository.UserRepository`](src/main/java/com/luisapi/userApi/Repository/UserRepository.java) — JPA repository.
 - [`com.luisapi.userApi.Models.User`](src/main/java/com/luisapi/userApi/Models/User.java) — JPA entity.
-- [`com.luisapi.userApi.config.SecurityConfig`](src/main/java/com/luisapi/userApi/config/SecurityConfig.java) — basic security config (H2 console allowed).
+- [`com.luisapi.userApi.config.SecurityConfig`](src/main/java/com/luisapi/userApi/config/SecurityConfig.java) — basic security config.
 - [`com.luisapi.userApi.config.SwaggerConfig`](src/main/java/com/luisapi/userApi/config/SwaggerConfig.java) — OpenAPI info.
-- [src/main/resources/application.properties](src/main/resources/application.properties) — app and H2 config.
+- [src/main/resources/application.properties](src/main/resources/application.properties) — app and profile config.
+- [src/main/resources/application-dev.properties](src/main/resources/application-dev.properties) — dev datasource (env-driven).
 - [src/main/resources/static/index.html](src/main/resources/static/index.html) — example static page.
 - [pom.xml](pom.xml) — build configuration.
 - [src/test/java/com/luisapi/userApi/UserApiApplicationTests.java](src/test/java/com/luisapi/userApi/UserApiApplicationTests.java) — basic test.
@@ -19,7 +20,7 @@ Tech stack
 - Java 21
 - Spring Boot 4
 - Spring Web, Spring Data JPA, Spring Security
-- H2 in-memory database
+- PostgreSQL (run via Docker Compose) — no longer using H2
 - springdoc OpenAPI (Swagger UI)
 
 Quickstart
@@ -32,12 +33,28 @@ Quickstart
 
 2. App runs on http://localhost:8080 by default.
 
-Database console
-- H2 console: http://localhost:8080/h2-console
-  - JDBC URL configured in [application.properties](src/main/resources/application.properties) as `jdbc:h2:mem:userdb`.
+Database (updated)
+- This project now uses PostgreSQL as the primary datastore (configured via Spring properties and environment variables).
+- H2 is no longer used by the application. If present, H2 may remain for legacy tests but the running app expects Postgres.
+- Configuration sources:
+  - application.properties controls active profile (default: dev)
+  - application-dev.properties reads datasource values from environment variables:
+    - SPRING_DATASOURCE_URL
+    - SPRING_DATASOURCE_USERNAME
+    - SPRING_DATASOURCE_PASSWORD
+
+Docker / Docker Compose
+- A docker-compose.yml is provided to run Postgres and the app together. When running in Docker make sure JDBC host points to the compose service name (postgres), not localhost.
+- Example .env (project root) configures Postgres and app envs:
+  - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userdb
+  - SPRING_DATASOURCE_USERNAME=u
+  - SPRING_DATASOURCE_PASSWORD=p
+  - POSTGRES_DB=userdb
+  - POSTGRES_USER=u
+  - POSTGRES_PASSWORD=p
 
 API docs (OpenAPI / Swagger)
-- Swagger UI: http://localhost:8080/swagger-ui.html (springdoc default)
+- Swagger UI: http://localhost:8080/swagger-ui.html
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 Main endpoints (from [`com.luisapi.userApi.UserController`](src/main/java/com/luisapi/userApi/UserController.java))
@@ -59,39 +76,7 @@ Testing
   ./mvnw test
 
 Notes
-- Persistence uses H2 in-memory; data is volatile between restarts.
-- Validation annotations are defined on [`com.luisapi.userApi.Models.User`](src/main/java/com/luisapi/userApi/Models/User.java) (`@NotBlank`, `@Email`).
-- Security is minimal and configured to allow H2 console access in [`com.luisapi.userApi.config.SecurityConfig`](src/main/java/com/luisapi/userApi/config/SecurityConfig.java).
-
-Docker
-
-This repository includes a Dockerfile at the project root. Use the commands below to build and run a container.
-
-- Build image and run (one-liner):
-  ```bash
-  docker build -t userapi:latest . && docker run --rm -p 8080:8080 userapi:latest
-  ```
-
-- Run detached (background) with container name:
-  ```bash
-  docker build -t userapi:latest .
-  docker run -d --name userapi -p 8080:8080 userapi:latest
-  ```
-
-- Stop and remove the detached container:
-  ```bash
-  docker stop userapi && docker rm userapi
-  ```
-
-Environment overrides
-- To run the container pointing to an external database, pass Spring datasource env vars:
-  ```bash
-  docker run --rm -p 8080:8080 \
-    -e SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/userdb \
-    -e SPRING_DATASOURCE_USERNAME=user \
-    -e SPRING_DATASOURCE_PASSWORD=password \
-    userapi:latest
-  ```
-
-Note
-- The Dockerfile uses a multi-stage build producing a runnable jar; the container serves the app on port 8080.
+- The app uses PostgreSQL by default when run in Docker or with the appropriate SPRING_DATASOURCE_* env vars.
+- For development you can run Postgres via docker-compose:
+  docker-compose up --build
+- Replace spring.jpa.hibernate.ddl-auto=update with a migration tool (Flyway/Liquibase) for production.
