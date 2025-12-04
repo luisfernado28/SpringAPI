@@ -62,3 +62,36 @@ Notes
 - Persistence uses H2 in-memory; data is volatile between restarts.
 - Validation annotations are defined on [`com.luisapi.userApi.Models.User`](src/main/java/com/luisapi/userApi/Models/User.java) (`@NotBlank`, `@Email`).
 - Security is minimal and configured to allow H2 console access in [`com.luisapi.userApi.config.SecurityConfig`](src/main/java/com/luisapi/userApi/config/SecurityConfig.java).
+
+Docker
+
+This repository includes a Dockerfile at the project root. Use the commands below to build and run a container.
+
+- Build image and run (one-liner):
+  ```bash
+  docker build -t userapi:latest . && docker run --rm -p 8080:8080 userapi:latest
+  ```
+
+- Run detached (background) with container name:
+  ```bash
+  docker build -t userapi:latest .
+  docker run -d --name userapi -p 8080:8080 userapi:latest
+  ```
+
+- Stop and remove the detached container:
+  ```bash
+  docker stop userapi && docker rm userapi
+  ```
+
+Environment overrides
+- To run the container pointing to an external database, pass Spring datasource env vars:
+  ```bash
+  docker run --rm -p 8080:8080 \
+    -e SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/userdb \
+    -e SPRING_DATASOURCE_USERNAME=user \
+    -e SPRING_DATASOURCE_PASSWORD=password \
+    userapi:latest
+  ```
+
+Note
+- The Dockerfile uses a multi-stage build producing a runnable jar; the container serves the app on port 8080.
