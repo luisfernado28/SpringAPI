@@ -17,13 +17,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    // GET /users
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // GET /users/{id}
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
@@ -32,13 +30,11 @@ public class UserController {
                 : ResponseEntity.notFound().build();
     }
 
-    // POST /users
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User newUser) {
         return ResponseEntity.ok(userService.createUser(newUser));
     }
 
-    // PUT /users/{id}
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
@@ -50,7 +46,6 @@ public class UserController {
                 : ResponseEntity.notFound().build();
     }
 
-    // DELETE /users/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id)
@@ -58,7 +53,6 @@ public class UserController {
                 : ResponseEntity.notFound().build();
     }
 
-    // Example test endpoint
     @GetMapping("/status")
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("Hello from UsersController!");
