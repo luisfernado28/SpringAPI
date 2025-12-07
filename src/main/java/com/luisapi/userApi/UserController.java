@@ -1,8 +1,12 @@
 package com.luisapi.userApi;
 
 import com.luisapi.userApi.Models.User;
+import com.luisapi.userApi.Services.InnerUserService;
 import com.luisapi.userApi.Services.UserService;
 import jakarta.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -11,9 +15,11 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private final InnerUserService userService;
 
-    public UserController(UserService userService) {
+    Logger logger = LoggerFactory.getLogger(UserController.class);
+
+    public UserController(InnerUserService userService) {
         this.userService = userService;
     }
 
@@ -32,6 +38,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User newUser) {
+        logger.info("Creating new user: {}", newUser);
         return ResponseEntity.ok(userService.createUser(newUser));
     }
 
