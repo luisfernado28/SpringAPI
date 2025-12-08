@@ -2,6 +2,10 @@ package com.luisapi.userApi.Services;
 
 import com.luisapi.userApi.Models.User;
 import com.luisapi.userApi.Repository.UserRepository;
+import com.luisapi.userApi.dto.UserCreateDto;
+import com.luisapi.userApi.dto.UserMapper;
+import com.luisapi.userApi.dto.UserUpdateDto;
+
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -10,8 +14,11 @@ public class UserService implements InnerUserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    private UserMapper userMapper;
+
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public List<User> getAllUsers() {
@@ -22,11 +29,12 @@ public class UserService implements InnerUserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public User createUser(UserCreateDto user) {
+        User userEntity = userMapper.toEntity(user);
+        return userRepository.save(userEntity);
     }
 
-    public User updateUser(Long id, User updatedUser) {
+    public User updateUser(Long id, UserUpdateDto updatedUser) {
         return userRepository.findById(id)
                 .map(existing -> {
                     existing.setName(updatedUser.getName());

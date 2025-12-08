@@ -2,7 +2,9 @@ package com.luisapi.userApi;
 
 import com.luisapi.userApi.Models.User;
 import com.luisapi.userApi.Services.InnerUserService;
-import com.luisapi.userApi.Services.UserService;
+import com.luisapi.userApi.dto.UserCreateDto;
+import com.luisapi.userApi.dto.UserUpdateDto;
+
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -37,15 +39,15 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User newUser) {
-        logger.info("Creating new user: {}", newUser);
+    public ResponseEntity<User> createUser(@Valid @RequestBody UserCreateDto newUser) {
+        logger.info("Creating new user with name: {}", newUser.getName());
         return ResponseEntity.ok(userService.createUser(newUser));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody User updatedUser
+            @Valid @RequestBody UserUpdateDto updatedUser
     ) {
         User user = userService.updateUser(id, updatedUser);
         return user != null
